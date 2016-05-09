@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Emojify – Slack emoji bulk import</title>
+</head>
+<body>
+  <ul class="groups">
+    {% for title, emojis in data.items() %}
+      <li>
+        <h2>{{ title }}</h2>
+        <ul class="emojis">
+          {% for name, link in emojis.items() %}
+            <li>
+              <img src="{{ link }}">
+              {{ name }}
+            </li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
