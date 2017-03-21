@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import requests
 from bs4 import BeautifulSoup
 from StringIO import StringIO
@@ -16,22 +16,25 @@ app = Flask(__name__)
 app.debug = True
 
 
-@app.route('/')
-def main():
+@app.route('/', methods=['GET'])
+def main_page():
   return render_template('template.html', data=get_emoji())
 
-@app.route('/test')
-def test():
-  return 'hi'
+
+@app.route('/', methods=['POST'])
+def import_emoji():
+  print request.form    #TODO: always empty. Why?
+  return 'Done!'
+
 
 ### Slack scraping functions ###
 def login(team, email, passwd):
   url = 'https://{}.slack.com'.format(team)
 
-  r1 = request(requests.get, url)
+  r1 = do_request(requests.get, url)
   crumb = get_crumb(r1.text)
 
-  r2 = request(
+  r2 = do_request(
     requests.post, url, cookies=r1.cookies, allow_redirects=False,
     data={'signin': 1, 'crumb': crumb, 'email': email, 'password': passwd},
   )
@@ -41,12 +44,12 @@ def login(team, email, passwd):
 def upload_emoji(name, image_url, team, cookies):
   url = 'https://{}.slack.com/customize/emoji'.format(team)
 
-  crumb_req = request(requests.get, url, cookies=cookies)
+  crumb_req = do_request(requests.get, url, cookies=cookies)
   crumb = get_crumb(crumb_req.text)
 
-  img_req = request(requests.get, image_url)
+  img_req = do_request(requests.get, image_url)
 
-  request(
+  do_request(
     requests.post, url, cookies=cookies, allow_redirects=False,
     data={'add': 1, 'crumb': crumb, 'name': name, 'mode': 'data'},
     files={'img': StringIO(img_req.content)}
@@ -55,7 +58,7 @@ def upload_emoji(name, image_url, team, cookies):
 
 ### slack-emojinator scrapers ###
 def get_emoji():
-  req = request(requests.get, 'https://slackmojis.com/')
+  req = do_request(requests.get, 'https://slackmojis.com/')
   soup = BeautifulSoup(req.text, 'html.parser')
   return {
     group.find('div', class_='title').string.strip(): {
@@ -71,7 +74,7 @@ def get_crumb(text):
   return BeautifulSoup(text, 'html.parser').find('input', attrs={'name': 'crumb'})['value']
 
 
-def request(method, *args, **kwargs):
+def do_request(method, *args, **kwargs):
   resp = method(*args, **kwargs)
   resp.raise_for_status()
   return resp

@@ -2,22 +2,47 @@
 <html>
 <head>
   <title>Emojify – Slack emoji bulk import</title>
+  <style type="text/css">
+    li {
+      display: inline-block;
+      text-decoration: none;
+    }
+
+    h1, h2 {
+      text-align: center;
+    }
+
+    .emoji {
+      border: 1px solid black;
+      width: 200px;
+      padding: 7px 10px;
+    }
+
+    .emoji-image {
+      height: 22px;
+    }
+  </style>
 </head>
 <body>
-  <ul class="groups">
-    {% for title, emojis in data.items() %}
-      <li>
-        <h2>{{ title }}</h2>
-        <ul class="emojis">
-          {% for name, link in emojis.items() %}
-            <li>
-              <img src="{{ link }}">
-              {{ name }}
-            </li>
-          {% endfor %}
-        </ul>
-      </li>
-    {% endfor %}
-  </ul>
+  <h1>Emojify – Slack emoji bulk import</h1>
+  <form action="/" method="post">
+    <ul class="groups">
+      {% for title, emojis in data.items() %}
+        <li>
+          <h2>{{ title }}</h2>
+          <ul class="emojis">
+            {% for name, link in emojis.items() %}
+              <li class="emoji">
+                <input type="checkbox" id="{{ name[1:-1] }}" value="1"></input>
+                <img class="emoji-image" src="{{ link }}">
+                <label for="{{ name[1:-1] }}">{{ name }}</label>
+              </li>
+            {% endfor %}
+          </ul>
+        </li>
+      {% endfor %}
+    </ul>
+    <button type="submit">Import some emoji</button>
+  </form>
 </body>
 </html>
